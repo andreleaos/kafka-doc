@@ -1,0 +1,48 @@
+3. Criar um tópico
+
+Em um novo PowerShell (mantenha o broker rodando no anterior):
+
+cd C:\kafka
+.\bin\windows\kafka-topics.bat --create --topic demo.events ^
+  --bootstrap-server localhost:9092 ^
+  --partitions 3 --replication-factor 1
+
+-----
+
+.\bin\windows\kafka-topics.bat --create --topic topic.contas ^
+  --bootstrap-server localhost:9092 ^
+  --partitions 3 --replication-factor 1
+
+
+-----
+
+# conferir
+.\bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092
+.\bin\windows\kafka-topics.bat --describe --topic demo.events --bootstrap-server localhost:9092
+
+--
+.\bin\windows\kafka-topics.bat --describe --topic topic.contas --bootstrap-server localhost:9092
+--
+
+A sintaxe dos CLI (kafka-topics.bat, --bootstrap-server, etc.) está na documentação das ferramentas.
+
+----
+
+4. (Opcional) Testar com CLIs 
+
+> Producer:
+
+.\bin\windows\kafka-console-producer.bat --topic demo.events --bootstrap-server localhost:9092
+
+---
+.\bin\windows\kafka-console-producer.bat --topic topic.contas --bootstrap-server localhost:9092
+
+
+> Consumer:
+
+.\bin\windows\kafka-console-consumer.bat --topic demo.events --from-beginning --bootstrap-server localhost:9092
+
+---
+.\bin\windows\kafka-console-consumer.bat --topic topic.contas --from-beginning --bootstrap-server localhost:9092
+
+############################

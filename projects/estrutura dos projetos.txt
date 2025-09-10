@@ -1,0 +1,22 @@
+2) Projetos Python 3.12 (producer e consumer)
+
+Usar a lib kafka-python (100% Python, simples de instalar no Windows). 
+Ela é compatível com brokers atuais e funciona bem no local. 
+(A confluent-kafka é excelente e performática, mas depende do librdkafka; no Windows costuma exigir mais passos de instalação).
+
+Observação: houve historicamente alguns atritos de libs assíncronas com 3.12; para começar liso no Windows 
+recomendo kafka-python (producer/consumer síncronos). 
+
+---
+
+Estrutura de pastas
+ 
+kafka-python-demo/
+  producer/
+    app.py
+    requirements.txt
+  consumer/ 
+    app.py
+    requirements.txt
+
+---

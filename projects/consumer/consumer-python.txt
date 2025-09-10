@@ -1,0 +1,69 @@
+2.2 Consumer (Python 3.12)
+
+consumer/requirements.txt
+
+kafka-python==2.0.2
+
+----
+
+consumer/app.py
+
+import json
+import signal
+import sys
+from kafka import KafkaConsumer
+
+TOPIC = "demo.events"
+BOOTSTRAP = "localhost:9092"
+GROUP_ID = "demo.events.consumer"
+
+def create_consumer():
+    return KafkaConsumer(
+        TOPIC,
+        bootstrap_servers=BOOTSTRAP,
+        group_id=GROUP_ID,
+        enable_auto_commit=True,
+        auto_offset_reset="earliest",   # lê desde o início se não houver commit
+        value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+        key_deserializer=lambda k: (k.decode("utf-8") if k else None),
+        consumer_timeout_ms=0
+    )
+
+def main():
+    consumer = create_consumer()
+
+    def handle_sig(sig, frame):
+        print("\nEncerrando consumer…")
+        consumer.close()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, handle_sig)
+    signal.signal(signal.SIGTERM, handle_sig)
+
+    print(f"Lendo mensagens de {TOPIC} como grupo '{GROUP_ID}' (Ctrl+C para sair)")
+    for msg in consumer:
+        print(f"← key={msg.key} partition={msg.partition} offset={msg.offset} value={msg.value}")
+
+if __name__ == "__main__":
+    main()
+
+############################
+
+Rodar:
+
+cd kafka-python-demo\consumer 
+py -3.12 -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+
+############################
+
+Teste: com o broker ligado e tópico criado, abra dois terminais:
+
+no 1º, rode o consumer;
+
+no 2º, rode o producer;
+você verá offsets aumentando e partições sendo usadas.
+
+############################

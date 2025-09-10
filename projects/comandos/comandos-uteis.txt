@@ -1,0 +1,105 @@
+3) Comandos úteis do Kafka (Windows)
+
+---
+
+# listar tópicos
+.\bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092
+
+# descrever um tópico
+.\bin\windows\kafka-topics.bat --describe --topic demo.events --bootstrap-server localhost:9092
+
+# alterar fator de retenção (ex.: 24h) do tópico
+.\bin\windows\kafka-configs.bat --bootstrap-server localhost:9092 ^
+  --entity-type topics --entity-name demo.events ^
+  --alter --add-config retention.ms=86400000
+
+# produzir/consumir via console (para debug rápido)
+.\bin\windows\kafka-console-producer.bat --topic demo.events --bootstrap-server localhost:9092
+.\bin\windows\kafka-console-consumer.bat --topic demo.events --from-beginning --bootstrap-server localhost:9092
+
+
+############################
+
+A referência de sintaxe/uso dos CLIs é esta (vale também para .bat no Windows).
+
+4) (Opcional) Alternativa com confluent-kafka
+
+Se você quiser desempenho máximo e recursos avançados, use confluent-kafka (bindings do librdkafka). 
+
+Em Windows costuma funcionar instalando o wheel:
+
+--
+
+pip install confluent-kafka 
+
+
+--
+
+E o código ficaria assim:
+
+from confluent_kafka import Producer, Consumer
+# Producer: p = Producer({"bootstrap.servers": "localhost:9092", "enable.idempotence": True})
+# Consumer: c = Consumer({"bootstrap.servers":"localhost:9092","group.id":"demo","auto.offset.reset":"earliest"})
+
+---
+
+Mas, se o pip não achar wheel compatível, pode exigir instalar librdkafka ou compilar 
+(por isso recomendei começar com kafka-python).
+
+---
+
+5) Dúvidas comuns no Windows
+
+Erro de path/“input line is too long”: prefira C:\kafka e caminhos curtos; 
+há relatos de ajustes no kafka-run-class.bat em versões novas quando o path é longo. 
+
+KRaft não inicia: verifique se você formatou o storage com o cluster id antes de subir o broker.
+
+############################
+
+Para envio de mensagem no topico
+Existem três jeitos simples — todos funcionam no Windows.
+
+1) Modo interativo (cole o JSON e tecle Enter)
+
+cd C:\kafka
+.\bin\windows\kafka-console-producer.bat --topic demo.events --bootstrap-server localhost:9092
+
+Agora digite uma linha por mensagem (cada Enter envia 1 evento):
+
+{"id":1,"type":"greeting","payload":"Hello Kafka"}
+
+(“Cada linha vira um evento” é o comportamento padrão do console producer.)
+
+---
+
+2) One-liner (enviar uma mensagem e sair)
+
+No PowerShell, mande o JSON pelo stdin:
+
+'{"id":1,"type":"greeting","payload":"Hello via pipe"}' |
+  .\bin\windows\kafka-console-producer.bat --topic demo.events --bootstrap-server localhost:9092
+
+(Pipe de echo/Write-Output para o producer é suportado.)
+
+---
+
+3) Enviar key + JSON (útil para particionamento)
+
+Use parse.key=true e um separador de chave:
+
+'id-1|{"id":1,"msg":"hello with key"}' |
+  .\bin\windows\kafka-console-producer.bat --topic demo.events --bootstrap-server localhost:9092 `
+  --property parse.key=true --property "key.separator=|"
+
+
+---
+
+(As propriedades parse.key e key.separator são as oficiais do console producer.)
+
+Dicas rápidas
+• Prefira aspas simples no PowerShell ao redor do JSON para não precisar escapar as aspas internas.
+• Para testar, abra um consumer em outra janela:
+.\bin\windows\kafka-console-consumer.bat --topic demo.events --from-beginning --bootstrap-server localhost:9092
+
+---

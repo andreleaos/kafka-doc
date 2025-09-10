@@ -1,0 +1,68 @@
+2.1 Producer (Python 3.12)
+
+producer/requirements.txt
+
+kafka-python==2.0.2
+
+---
+
+producer/app.py
+
+import json
+import signal
+import sys
+import time
+from kafka import KafkaProducer
+
+TOPIC = "demo.events"
+BOOTSTRAP = "localhost:9092"
+
+def create_producer():
+    # Configurações essenciais para confiabilidade básica
+    return KafkaProducer(
+        bootstrap_servers=BOOTSTRAP,
+        acks="all",                # aguarda confirmação de todos os ISR
+        retries=5,
+        linger_ms=5,               # agrupa mensagens por milissegundos
+        value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+        key_serializer=lambda k: (k.encode("utf-8") if k else None),
+    )
+
+def main():
+    producer = create_producer()
+
+    def handle_sig(sig, frame):
+        print("\nEncerrando producer…")
+        producer.flush(10)
+        producer.close(10)
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, handle_sig)
+    signal.signal(signal.SIGTERM, handle_sig)
+
+    print(f"Enviando mensagens para {TOPIC} (Ctrl+C para sair)")
+    i = 0
+    while True:
+        event = {"id": i, "type": "greeting", "payload": f"Hello Kafka #{i}"}
+        key = f"id-{i%3}"
+        future = producer.send(TOPIC, key=key, value=event)
+        # opcional: bloquear até confirmação
+        metadata = future.get(timeout=10)
+        print(f"→ sent to partition={metadata.partition} offset={metadata.offset}")
+        i += 1
+        time.sleep(0.5)
+
+if __name__ == "__main__":
+    main() 
+
+############################
+
+Rodar:
+
+cd kafka-python-demo\producer
+py -3.12 -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+
+############################

@@ -1,0 +1,59 @@
+Config no Windows (Kafka em KRaft, sem ZooKeeper) + dois projetos Python 3.12 (producer e consumer). 
+Depois seguir os passos para conseguir subir o servico do Kafka, criar tópico e trocar mensagens.
+
+####
+
+Instalação
+
+1) Instalar o Kafka no Windows (KRaft)
+
+1. Pré-requisitos
+
+Java 17+ instalado (Temurin/Adoptium é ok) e JAVA_HOME configurada.
+
+Kafka: baixe o .tgz mais recente em “Download Kafka” e extraia, por ex.: C:\kafka. 
+O quickstart oficial usa KRaft (sem ZooKeeper). Apache Kafka
+
+https://kafka.apache.org/downloads
+
+2. Inicializar o cluster em KRaft (Windows .bat)
+
+Abra PowerShell como administrador e rode dentro de C:\kafka:
+
+---
+
+cd C:\kafka
+
+##### 
+
+Configuração
+
+# 2.1 Gerar um cluster-id
+.\bin\windows\kafka-storage.bat random-uuid
+
+--- Classpath is empty. Please build the project first e.g. by running 'gradlew jarAll'
+--- esse erro foi pq não usei a versão binaries e sim a source, trocando para usar o bin funcionou
+
+>>> p8Aly2r0S2eBAy5k2Dh9Sw --- O uuid gerado foi esse --- trocar pelo uuid gerado no passo 2.1
+
+# copie o UUID retornado, por ex.  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# 2.2 Formatar o storage com esse id (substitua pelo seu UUID)
+.\bin\windows\kafka-storage.bat format -t xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -c .\config\kraft\server.properties
+
+.\bin\windows\kafka-storage.bat format -t p8Aly2r0S2eBAy5k2Dh9Sw -c .\config\kraft\server.properties
+
+# 2.3 Iniciar o broker em KRaft
+.\bin\windows\kafka-server-start.bat .\config\kraft\server.properties
+
+---
+
+Esses comandos seguem o fluxo de KRaft (gerar ClusterId → formatar storage → iniciar broker), 
+exatamente como nos guias recentes para Windows/KRaft
+
+---
+
+Dica: mantenha caminhos sem espaço (ex.: C:\kafka) para evitar erros nos .bat.
+
+---
+
+
